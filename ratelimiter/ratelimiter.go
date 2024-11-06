@@ -83,7 +83,7 @@ func (rl *InMemoryRateLimiter) processRequest(data *RateLimitData) bool {
 	}
 
 	// Check if we should reset the window
-	if now.Sub(data.LastAllowedTime) > rl.Interval {
+	if time.Since(data.LastAllowedTime) > rl.Interval {
 		fmt.Printf("Resetting window for IP %s\n", data.IP)
 		data.RequestCount = 0
 		data.LastAllowedTime = now

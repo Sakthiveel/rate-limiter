@@ -2,12 +2,13 @@ package ratelimiter
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestRateLimiter(t *testing.T) {
-	limiter := NewInMemoryRateLimiter(2, 10000000000)
+func BasicTest(t *testing.T) {
+	limiter := NewInMemoryRateLimiter(2, time.Duration(5*int(time.Second)))
 	test_ip := `test_ip`
 	t.Run("New Request should be added properly", func(t *testing.T) {
 		isAllowed := limiter.IsAllowed(test_ip)
@@ -26,7 +27,34 @@ func TestRateLimiter(t *testing.T) {
 		isAllowed := limiter.IsAllowed(test_ip)
 		require.Equal(test, false, isAllowed)
 	}) // You can add more test cases here
+}
 
+func Test_RateLimiter(test *testing.T) {
+	limit := 2
+	interval := time.Duration(5 * time.Second)
+	limiter := NewInMemoryRateLimiter(limit, interval)
+	test_ip := `test-ip-2`
+
+	test.Run("Checking block and reset flow", func(test *testing.T) {
+		for i := 1; i <= limit; i++ {
+			res := limiter.IsAllowed(test_ip)
+			require.Equal(test, true, res)
+		}
+		require.Equal(test, false, limiter.IsAllowed(test_ip))
+		time.Sleep(interval)
+		for i := 1; i <= limit; i++ {
+			res := limiter.IsAllowed(test_ip)
+			require.Equal(test, true, res)
+		}
+		require.Equal(test, false, limiter.IsAllowed(test_ip))
+		time.Sleep(interval)
+		for i := 1; i <= limit; i++ {
+			res := limiter.IsAllowed(test_ip)
+			require.Equal(test, true, res)
+		}
+		require.Equal(test, false, limiter.IsAllowed(test_ip))
+
+	})
 }
 
 // func TestAdd(t *testing.T) {
